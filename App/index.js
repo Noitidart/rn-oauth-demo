@@ -2,14 +2,16 @@ import React, { Component } from 'react';
 import { AppRegistry, StyleSheet, Text, View, Button, Linking } from 'react-native'
 import qs from 'qs'
 
-import { genTwitterRequest, genTwitterToken, getAuthURL, SERVICES } from './auth'
+import { getDetail, genTwitterToken, getAuthURL, SERVICES } from './auth'
 import { isObject, wait } from './utils'
 
 import styles from './style.css'
 
-genTwitterRequest.cacheKey('REMOVED');
-genTwitterRequest.cacheSecret('REMOVED');
-genTwitterToken.cacheCallbackURL('https://sundayschoolonline.org/auth.html#name=Floppers&service=Twitter&protocol=floppers');
+getDetail.cache(SERVICES.TWITTER, {
+    consumer_key: '',
+    consumer_secret: '',
+    callback_url: 'https://sundayschoolonline.org/auth.html#name=Floppers&service=Twitter&protocol=floppers'
+});
 
 class App extends Component {
     state = {

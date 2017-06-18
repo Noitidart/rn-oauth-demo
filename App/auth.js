@@ -2,13 +2,34 @@ import HmacSHA1 from 'crypto-js/hmac-sha1'
 import EncBase64 from 'crypto-js/enc-base64'
 import qs from 'qs'
 
-import { alphaSort, genNonce, toRFC3986 } from './utils'
+import { alphaSort, genNonce, toRFC3986, isObject } from './utils'
 
 // console.log(encodeURIComponent('app=Floppers&protocol=floppers'));
 
 export const SERVICES = {
-    TWITTER: 'TWITTER'
+    TWITTER: 'TWITTER',
+	INSTAGRAM: 'INSTAGRAM'
 }
+
+getDetail.cache = (service, key_or_object, value_or_undefined) => getDetail._cache[service] = Object.assign(getDetail._cache[service] || {}, isObject(key_or_object) ? key_or_object : { [key_or_object]:value_or_undefined });
+	// getServiceDetail.cache(SERVICES.INSTAGRAM, 'client_id', 'foo');
+	// getServiceDetail.cache(SERVICES.INSTAGRAM, { client_id:'foo', redir_uri:'bar' });
+export function getDetail(service, key) {
+	/* cache values per service
+		twitter
+			consumer_key
+			consumer_secret
+		instagram
+			client_id
+			redir_uri
+
+	*/
+	const { _cache } = getDetail;
+	if (!(service in _cache)) return undefined;
+	if (!(key in _cache[service])) return undefined;
+    return _cache[service][key];
+}
+getDetail._cache = {};
 
 export async function getAuthURL(service) {
 	// gets the URL to open in a new tab in a browser for the service so the user can signin and click allow
@@ -17,17 +38,17 @@ export async function getAuthURL(service) {
 			const oauth_token = await genTwitterToken();
 			return `https://api.twitter.com/oauth/authorize?${qs.stringify({ oauth_token })}`;
         }
+		case INSTAGRAM:
+			return `https://api.instagram.com/oauth/authorize/?client_id=${getDetail(SERVICES.INSTAGRAM, 'client_id')}&redirect_uri=${getDetail(SERVICES.INSTAGRAM, 'redir_uri')}&response_type=token`;
     }
 }
 
-genTwitterRequest.cacheKey = consumer_key => genTwitterRequest._cache.consumer_key = consumer_key;
-genTwitterRequest.cacheSecret = consumer_secret => genTwitterRequest._cache.consumer_secret = consumer_secret;
 export function genTwitterRequest(method, url, {
 	postdata, // object - serializable
 	token_secret, // string - short for oauth_token_secret // i dont offer a cache on this because these can only be used for once api call
 	extra_params, // object - short for extra_oauth_params. serializable
-	consumer_key=genTwitterRequest._cache.consumer_key,
-	consumer_secret=genTwitterRequest._cache.consumer_secret
+	consumer_key=getDetail(SERVICES.TWITTER, 'consumer_key'),
+	consumer_secret=getDetail(SERVICES.TWITTER, 'consumer_secret')
 }) {
 	// last arg is options
 	// generate a Request object with proper twitter signature
@@ -76,10 +97,9 @@ export function genTwitterRequest(method, url, {
 	});
 
 }
-genTwitterRequest._cache = {};
 
-genTwitterToken.cacheCallbackURL = callback_url => genTwitterToken._cache.callback_url = callback_url;
-export async function genTwitterToken(callback_url=genTwitterToken._cache.callback_url) {
+
+export async function genTwitterToken(callback_url=getDetail(SERVICES.TWITTER, 'callback_url')) {
 	// gets a single use token (signle use means its only good for one api call (one fetch request))
 	const res = await fetch(genTwitterRequest('post', 'https://api.twitter.com/oauth/request_token', {
 		extra_params: {
