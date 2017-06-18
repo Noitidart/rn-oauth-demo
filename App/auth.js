@@ -120,4 +120,3 @@ export async function genTwitterToken(callback_url=getDetail(SERVICES.TWITTER, '
 		return qs.parse(text).oauth_token;
 	}
 }
-genTwitterToken._cache = {};

@@ -11,48 +11,104 @@
         <iframe id="loader" style="display:none" height="0" width="0"></iframe>
         <a href="#" id="launcher" style="display:none">Launch</a>
         <script>
+            var SERVICES = {
+                TWITTER: 'TWITTER',
+                INSTAGRAM: 'INSTAGRAM'
+            }
+
             function queryStringAsJson(aQueryString) {
                 var asJsonStringify = aQueryString;
                 asJsonStringify = asJsonStringify.replace(/&/g, '","');
                 asJsonStringify = asJsonStringify.replace(/=/g, '":"');
                 asJsonStringify = '{"' + asJsonStringify + '"}';
-                asJsonStringify = asJsonStringify.replace(/"(\d+|true|false)"/, function($0, $1) { return $1; });
-
+                console.log('asJsonStringify:',asJsonStringify);
                 return JSON.parse(asJsonStringify);
             }
 
-            // document.write(window.location.href);
-            // https://sundayschoolonline.org/oauth/twitter.html?oauth_token=OZrVjQAAAAAAWN0mAAABXLhd-8k&oauth_verifier=jfHJYCrIq7kGHF9iPMmqCS4jYMejVM4I#app=Floppers&protocol=floppers
-
+            // alert(window.location.href);
+            // approve - https://sundayschoolonline.org/auth.html?oauth_token=OZrVjQAAAAAAWN0mAAABXLhd-8k&oauth_verifier=jfHJYCrIq7kGHF9iPMmqCS4jYMejVM4I#app=Floppers&protocol=floppers
+            // deny - https://sundayschoolonline.org/auth.html#name=Floppers&service=Twitter&protocol=floppers?denied=x-FoFvAAAAAAAWN0mAAABXLj_4GI
             // console.log(encodeURIComponent('name=Floppers&service=Twitter&protocol=floppers'));
-            try {
-                var app = queryStringAsJson(window.location.hash.substr(1)); // skip the leading #
-            } catch(ex) {
-                var app = {name:'Floppers', service:'Twitter', protocol:'floppers'};
-            }
 
-            document.title = app.name + ' - ' + app.service + ' Authorization';
-            var url = !app.protocol ? '' : app.protocol + '://auth/' + app.service + window.location.search;
+            var href = window.location.href;
 
-            document.getElementById('launcher').addEventListener('click', openApp, false);
+            var hash = href.indexOf('#') > -1 ? href.substr(href.indexOf('#') + 1) : '';
+            if (hash.indexOf('?') > -1) hash = hash.substr(0, hash.indexOf('?'));
 
-            document.getElementById('root').textContent = 'Approved! You can return to the ' + app.name + ' app and use the ' + app.service + ' features.';
+            var search = href.indexOf('?') > -1 ? href.substr(href.indexOf('?') + 1) : '';
+            if (search.indexOf('#') > -1) search = search.substr(0, search.indexOf('#'));
 
+            var root = document.getElementById('root');
 
-            // window.onload = function() {
+            if (!hash) {
+                root.textContent = 'App details could not be recognized. Error: "invalid hash"';
+            } else if (!search) {
+                root.textContent = 'Services details could not be extracted. Error: "invalid search"';
+            } else {
+                var app = queryStringAsJson(hash); // {name: proper cased name service:service code all caps, same as what i use in application js files, protocol:}
+                document.title = app.name + ' - ' + getServiceName() + ' Authorization';
+
+                var details = extractDetails();
+                console.log('details:', details);
+                var url = app.protocol + '://auth?' + encodeURIComponent(JSON.stringify(details));
+                if (details.approved) {
+                    root.textContent = 'Approved! You can return to the ' + app.name + ' app and use the ' + getServiceName() + ' features.';
+                } else {
+                    root.textContent = 'You denied permission. You will not able to use the ' + getServiceName() + ' features in the '+ app.name +' app.';
+                }
+
+                document.getElementById('launcher').addEventListener('click', openApp, false);
                 setTimeout(function() {
                     simulateClick('launcher');
                 }, 1000);
-            // };
+            }
 
-            // var leaveCnt = 0;
-            // window.addEventListener("beforeunload", function (event) {
-            //     leaveCnt++
-            //     if (leaveCnt === 1) return;
-            //     else event.returnValue = 'Are you sure?'
-            //     console.log('event:', event);
-            //     event.returnValue = 'asdf'; // JSON.stringify(event);
-            // });
+            function getServiceName() {
+                switch (app.service) {
+                    case SERVICES.TWITTER: return 'Twitter'
+                    case SERVICES.INSTAGRAM: return 'Instagram'
+                }
+            }
+
+            function extractDetails() {
+                // crossserver-link18283
+                /* returns
+                {
+                    allowed: bool,
+                    TWITTER-true:
+                        oauth_token
+                        oauth_verifier
+                    TWITTER-false:
+                        denied
+                }
+                */
+                var extract;
+                switch (app.service) {
+                    default:
+                        extract = queryStringAsJson(search);
+                }
+
+                var approved;
+                switch (app.service) {
+                    case SERVICES.TWITTER:
+                            if (extract.denied) approved = false;
+                            else if (extract.oauth_token) approved = true;
+                            else approved = false;
+                        break;
+                    case SERVICES.INSTAGRAM:
+                            approved = false;
+                        break;
+                    default:
+                        approved = false;
+                }
+
+                var details = extract;
+                details.approved = approved;
+
+                details.service = app.service;
+
+                return details;
+            }
 
             function openApp() {
                 var isiOS = navigator.userAgent.match('iPhone') || navigator.userAgent.match('iPod');
@@ -65,19 +121,6 @@
                 }
                 document.getElementById('launcher').textContent = 'ok launched';
             }
-
-            // (function(){
-            //     openApp();
-            // })();
-
-            // function simulateClick(id) {
-            //     var evt = document.createEvent("MouseEvents");
-            //     evt.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0,
-            //         false, false, false, false, 0, null);
-
-            //     var cb = document.getElementById(id);
-            //     cb.dispatchEvent(evt);
-            // }
 
             function simulateClick(id) {
                 var el = document.getElementById(id);
