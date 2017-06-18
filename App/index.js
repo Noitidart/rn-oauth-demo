@@ -10,7 +10,13 @@ import styles from './style.css'
 getDetail.cache(SERVICES.TWITTER, {
     consumer_key: 'REMOVED',
     consumer_secret: 'REMOVED',
-    callback_url: 'https://sundayschoolonline.org/auth.html#name=Floppers&service=TWITTER&protocol=floppers'
+    callback_url: `https://sundayschoolonline.org/auth/InstaLikes/${SERVICES.TWITTER}/instalikes`
+});
+
+getDetail.cache(SERVICES.INSTAGRAM, {
+    client_id: 'REMOVED',
+    client_secret: 'REMOVED',
+    redirect_uri: `https://sundayschoolonline.org/auth/InstaLikes/${SERVICES.INSTAGRAM}/instalikes`
 });
 
 class App extends Component {
@@ -22,7 +28,7 @@ class App extends Component {
         this.setState(()=>({ authstatus:'Getting authorization page...', authbtn:false }));
         let url;
         try {
-            url = await getAuthURL(SERVICES.TWITTER);
+            url = await getAuthURL(SERVICES.INSTAGRAM);
         } catch(ex) {
             this.setState(()=>({ authstatus:'Failed to get authorization page, please try again.', authbtn:true }));
             return;

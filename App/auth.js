@@ -13,7 +13,7 @@ export const SERVICES = {
 
 getDetail.cache = (service, key_or_object, value_or_undefined) => getDetail._cache[service] = Object.assign(getDetail._cache[service] || {}, isObject(key_or_object) ? key_or_object : { [key_or_object]:value_or_undefined });
 	// getServiceDetail.cache(SERVICES.INSTAGRAM, 'client_id', 'foo');
-	// getServiceDetail.cache(SERVICES.INSTAGRAM, { client_id:'foo', redir_uri:'bar' });
+	// getServiceDetail.cache(SERVICES.INSTAGRAM, { client_id:'foo', redirect_uri:'bar' });
 export function getDetail(service, key) {
 	/* cache values per service
 		twitter
@@ -21,7 +21,7 @@ export function getDetail(service, key) {
 			consumer_secret
 		instagram
 			client_id
-			redir_uri
+			redirect_uri
 
 	*/
 	const { _cache } = getDetail;
@@ -38,8 +38,10 @@ export async function getAuthURL(service) {
 			const oauth_token = await genTwitterToken();
 			return `https://api.twitter.com/oauth/authorize?${qs.stringify({ oauth_token })}`;
         }
-		case INSTAGRAM:
-			return `https://api.instagram.com/oauth/authorize/?client_id=${getDetail(SERVICES.INSTAGRAM, 'client_id')}&redirect_uri=${getDetail(SERVICES.INSTAGRAM, 'redir_uri')}&response_type=token`;
+		case SERVICES.INSTAGRAM:
+			return `https://api.instagram.com/oauth/authorize/?client_id=${getDetail(SERVICES.INSTAGRAM, 'client_id')}&redirect_uri=${toRFC3986(getDetail(SERVICES.INSTAGRAM, 'redirect_uri'))}&response_type=token`;
+		default:
+			throw new Error(`Invalid service of "${service}"`);
     }
 }
 

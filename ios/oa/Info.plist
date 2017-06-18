@@ -55,7 +55,7 @@
 	<string>com.piszek.teamparrot</string>
 	<key>CFBundleURLSchemes</key>
 	<array>
-		<string>floppers</string>
+		<string>instalikes</string>
 	</array>
 </dict>
 </plist>

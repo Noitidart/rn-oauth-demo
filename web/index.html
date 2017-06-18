@@ -16,14 +16,8 @@
                 INSTAGRAM: 'INSTAGRAM'
             }
 
-            function queryStringAsJson(aQueryString) {
-                var asJsonStringify = aQueryString;
-                asJsonStringify = asJsonStringify.replace(/&/g, '","');
-                asJsonStringify = asJsonStringify.replace(/=/g, '":"');
-                asJsonStringify = '{"' + asJsonStringify + '"}';
-                console.log('asJsonStringify:',asJsonStringify);
-                return JSON.parse(asJsonStringify);
-            }
+            // https://sundayschoolonline.org/auth/InstaLikes/INSTAGRAM/instalikes
+            // https://sundayschoolonline.org/auth/app.name/app.service/app.protocol
 
             // alert(window.location.href);
             // approve - https://sundayschoolonline.org/auth.html?oauth_token=OZrVjQAAAAAAWN0mAAABXLhd-8k&oauth_verifier=jfHJYCrIq7kGHF9iPMmqCS4jYMejVM4I#app=Floppers&protocol=floppers
@@ -32,20 +26,31 @@
 
             var href = window.location.href;
 
-            var hash = href.indexOf('#') > -1 ? href.substr(href.indexOf('#') + 1) : '';
-            if (hash.indexOf('?') > -1) hash = hash.substr(0, hash.indexOf('?'));
-
-            var search = href.indexOf('?') > -1 ? href.substr(href.indexOf('?') + 1) : '';
-            if (search.indexOf('#') > -1) search = search.substr(0, search.indexOf('#'));
-
+            var app_str = href.match(/auth\/([^#?]+)/);
             var root = document.getElementById('root');
 
-            if (!hash) {
-                root.textContent = 'App details could not be recognized. Error: "invalid hash"';
-            } else if (!search) {
-                root.textContent = 'Services details could not be extracted. Error: "invalid search"';
+            var search = window.location.search ? window.location.search.substr(1) : '';
+            var hash = window.location.hash ? window.location.hash.substr(1) : '';
+
+            var search_hash = [];
+            if (search) search_hash.push(search);
+            if (hash) search_hash.push(hash);
+            search_hash = search_hash.join('&');
+
+            console.log('app_str:', app_str);
+            if (!app_str) { // split is link399999
+                root.textContent = 'Application details could not be found. Error: "invalid app string"';
+            } else if (app_str[1].split('/').length !== 3) {
+                root.textContent = 'Application details could not be recognized. Error: "invalid app string length"';
+            } else if (!window.location.hash && !window.location.search) {
+                root.textContent = 'Services details could not be extracted. Error: "no hash or search"';
             } else {
-                var app = queryStringAsJson(hash); // {name: proper cased name service:service code all caps, same as what i use in application js files, protocol:}
+                var app_arr = app_str[1].split('/'); // link399999
+                var app = {
+                    name: app_arr[0], // proper cased name of application
+                    service: app_arr[1], // service same as what i use in application js files
+                    protocol: app_arr[2] // protocol
+                };
                 document.title = app.name + ' - ' + getServiceName() + ' Authorization';
 
                 var details = extractDetails();
@@ -85,7 +90,7 @@
                 var extract;
                 switch (app.service) {
                     default:
-                        extract = queryStringAsJson(search);
+                        extract = queryStringAsJson(search_hash);
                 }
 
                 var approved;
@@ -96,7 +101,8 @@
                             else approved = false;
                         break;
                     case SERVICES.INSTAGRAM:
-                            approved = false;
+                            if (extract.access_token) approved = true;
+                            else approved = false;
                         break;
                     default:
                         approved = false;
@@ -119,7 +125,7 @@
                 } else {
                     document.getElementById('loader').src = url;
                 }
-                document.getElementById('launcher').textContent = 'ok launched';
+                // document.getElementById('launcher').textContent = 'ok launched';
             }
 
             function simulateClick(id) {
@@ -131,6 +137,16 @@
                 } else {
                     el.click();
                 }
+            }
+
+            function queryStringAsJson(aQueryString) {
+                console.log('aQueryString:', aQueryString);
+                var asJsonStringify = aQueryString;
+                asJsonStringify = asJsonStringify.replace(/&/g, '","');
+                asJsonStringify = asJsonStringify.replace(/=/g, '":"');
+                asJsonStringify = '{"' + asJsonStringify + '"}';
+                console.log('asJsonStringify:',asJsonStringify);
+                return JSON.parse(asJsonStringify);
             }
         </script>
     </body>
