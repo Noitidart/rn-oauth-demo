@@ -2,7 +2,8 @@ import HmacSHA1 from 'crypto-js/hmac-sha1'
 import EncBase64 from 'crypto-js/enc-base64'
 import qs from 'qs'
 
-import { alphaSort, genNonce, toRFC3986, isObject } from './utils'
+import { alphaSort, genNonce, isObject } from 'cmn/all'
+import { toRFC3986 } from 'cmn/qs'
 
 // console.log(encodeURIComponent('app=Floppers&protocol=floppers'));
 

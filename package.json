@@ -7,6 +7,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "cmn": "git+https://github.com/Noitidart/cmn.git",
     "crypto-js": "^3.1.9-1",
     "qs": "^6.4.0",
     "react": "16.0.0-alpha.12",

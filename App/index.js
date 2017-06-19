@@ -1,21 +1,22 @@
 import React, { Component } from 'react';
 import { AppRegistry, StyleSheet, Text, View, Button, Linking } from 'react-native'
-import qs from 'qs'
+
+import { isObject, wait } from 'cmn/all'
+
 
 import { getDetail, genTwitterToken, getAuthURL, SERVICES } from './auth'
-import { isObject, wait } from './utils'
 
 import styles from './style.css'
 
 getDetail.cache(SERVICES.TWITTER, {
-    consumer_key: 'REMOVED',
-    consumer_secret: 'REMOVED',
+    consumer_key: 'AjONvgAdbD8YWCtRn5U9yA',
+    consumer_secret: 'jrcJKxvJ92NeeV48RL1lotN9PigbxCCbqUkKj237yio',
     callback_url: `https://sundayschoolonline.org/auth/InstaLikes/${SERVICES.TWITTER}/instalikes`
 });
 
 getDetail.cache(SERVICES.INSTAGRAM, {
-    client_id: 'REMOVED',
-    client_secret: 'REMOVED',
+    client_id: 'b475d7b6428f40caae8b747d09a78b41',
+    client_secret: 'cac3817607bf472e8a938f41751676ef',
     redirect_uri: `https://sundayschoolonline.org/auth/InstaLikes/${SERVICES.INSTAGRAM}/instalikes`
 });
 
@@ -35,8 +36,11 @@ class App extends Component {
         }
         this.setState(()=>({ authstatus:'Opening authorization page in browser...' }));
         this.handled = false;
+        console.log('will openURL');
         Linking.openURL(url);
+        console.log('did openURL');
         await wait(1000);
+        console.log('will setState');
         if (!this.handled) this.setState(()=>({ authstatus:'The authorization tab has been opened in your browser. If it has not, please try again.', authbtn:true }));
     }
     handleAuth = e => {
@@ -69,6 +73,7 @@ class App extends Component {
     }
     componentWillUnmount() {
         Linking.removeEventListener('url', this.handleAuth);
+        console.log('UNMOUNTING!!!!!!');
     }
     render() {
         const { authstatus, authbtn } = this.state;
