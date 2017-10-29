@@ -34,6 +34,8 @@ getDetail._cache = {};
 
 export async function getAuthURL(service) {
 	// gets the URL to open in a new tab in a browser for the service so the user can signin and click allow
+	// refer: https://github.com/Noitidart/NativeShotSupplement/blob/master/MainWorkerSupplement.js#L70
+
     switch (service) {
         case SERVICES.TWITTER: {
 			const oauth_token = await genTwitterToken();

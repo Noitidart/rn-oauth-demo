@@ -19,6 +19,8 @@
             // https://sundayschoolonline.org/auth/InstaLikes/INSTAGRAM/instalikes
             // https://sundayschoolonline.org/auth/app.name/app.service/app.protocol
 
+            // example redir: https://sundayschoolonline.org/auth/InstaLikes/INSTAGRAM/instalikes#access_token=5615307941.b475d7b.a4d845967f0a405596f87eee661591ce
+
             // alert(window.location.href);
             // approve - https://sundayschoolonline.org/auth.html?oauth_token=OZrVjQAAAAAAWN0mAAABXLhd-8k&oauth_verifier=jfHJYCrIq7kGHF9iPMmqCS4jYMejVM4I#app=Floppers&protocol=floppers
             // deny - https://sundayschoolonline.org/auth.html#name=Floppers&service=Twitter&protocol=floppers?denied=x-FoFvAAAAAAAWN0mAAABXLj_4GI
@@ -57,15 +59,20 @@
                 console.log('details:', details);
                 var url = app.protocol + '://auth?' + encodeURIComponent(JSON.stringify(details));
                 if (details.approved) {
-                    root.textContent = 'Approved! You can return to the ' + app.name + ' app and use the ' + getServiceName() + ' features.';
+                    root.textContent = 'Approved! Automatically returning you to the ' + app.name + ' app where you can now use the ' + getServiceName() + ' features.';
                 } else {
                     root.textContent = 'You denied permission. You will not able to use the ' + getServiceName() + ' features in the '+ app.name +' app.';
                 }
 
-                document.getElementById('launcher').addEventListener('click', openApp, false);
-                setTimeout(function() {
+                var launcher = document.getElementById('launcher');
+                launcher.addEventListener('click', openApp, false);
+                window.addEventListener('load', function() {
                     simulateClick('launcher');
-                }, 1000);
+                    setTimeout(function() {
+                        launcher.textContent = 'If you are not automatically returned to app, click here to return.'
+                        launcher.style.display = '';
+                    }, 1000);
+                }, false);
             }
 
             function getServiceName() {
@@ -120,7 +127,7 @@
                 var isiOS = navigator.userAgent.match('iPhone') || navigator.userAgent.match('iPod');
                 var isAndroid = navigator.userAgent.match('Android');
 
-                if (isAndroid) {
+                if (isAndroid || isiOS) {
                     window.location = url;
                 } else {
                     document.getElementById('loader').src = url;
